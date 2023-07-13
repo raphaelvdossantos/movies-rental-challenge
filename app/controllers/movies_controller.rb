@@ -1,4 +1,6 @@
 class MoviesController < ApplicationController
+  before_action :is_available, only: [:rent]
+
   def index
     @movies = Movie.all
     render json: @movies
@@ -17,10 +19,17 @@ class MoviesController < ApplicationController
 
   def rent
     user = User.find(params[:user_id])
-    movie = Movie.find(params[:id])
-    movie.available_copies -= 1
-    movie.save
-    user.rented << movie
-    render json: movie
+    @movie.available_copies -= 1
+    @movie.save
+    user.rented << @movie
+    render json: @movie
   end
+
+  private
+     def is_available
+      @movie = Movie.find(params[:id])
+      if @movie.available_copies == 0
+        render :json => {:response => 'The selected movie cannot be rented as it is unavailable.' }, status: :forbidden
+      end
+    end
 end
