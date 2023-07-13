@@ -1,4 +1,6 @@
 class MoviesController < ApplicationController
+   rescue_from ActiveRecord::RecordNotFound, with: :not_found
+
   def index
     @movies = Movie.all
     render json: @movies
@@ -22,5 +24,10 @@ class MoviesController < ApplicationController
     movie.save
     user.rented << movie
     render json: movie
+  end
+
+  private
+    def not_found
+    render :json => {:response => "Resource not found"}, status: :not_found
   end
 end
