@@ -1,5 +1,8 @@
 class MoviesController < ApplicationController
   before_action :rented_by_user, only: [:rent]
+  before_action :is_available, only: [:rent]
+  
+  rescue_from ActiveRecord::RecordNotFound, with: :not_found
 
   def index
     @movies = Movie.all
@@ -19,11 +22,10 @@ class MoviesController < ApplicationController
 
   def rent
     user = User.find(params[:user_id])
-    movie = Movie.find(params[:id])
-    movie.available_copies -= 1
-    movie.save
-    user.rented << movie
-    render json: movie
+    @movie.available_copies -= 1
+    @movie.save
+    user.rented << @movie
+    render json: @movie
   end
 
   private
@@ -33,5 +35,21 @@ class MoviesController < ApplicationController
       if not rented.nil?
         render :json => {:response => "Movie already rented by user" }, status: :forbidden 
       end
+    end
+  
+   def is_available
+      @movie = Movie.find(params[:id])
+      if @movie.available_copies == 0
+        render :json => {:response => 'The selected movie cannot be rented as it is unavailable.' }, status: :forbidden
+      end
+    end
+       
+    def not_found
+      render :json => {:response => "Resource not found"}, status: :not_found
+    end
+
+    def show
+      movie = Movie.find(params[:id])
+      render json: movie
     end
 end
