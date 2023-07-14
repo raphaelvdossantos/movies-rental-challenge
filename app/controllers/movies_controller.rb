@@ -1,4 +1,6 @@
 class MoviesController < ApplicationController
+  before_action :rented_by_user, only: [:rent]
+
   def index
     @movies = Movie.all
     render json: @movies
@@ -23,4 +25,13 @@ class MoviesController < ApplicationController
     user.rented << movie
     render json: movie
   end
+
+  private
+    def rented_by_user
+      rented = Rental.where(user_id: params[:user_id], movie_id: params[:id])
+
+      if not rented.nil?
+        render :json => {:response => "Movie already rented by user" }, status: :forbidden 
+      end
+    end
 end
