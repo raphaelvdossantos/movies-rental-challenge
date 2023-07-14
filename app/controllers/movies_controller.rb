@@ -28,6 +28,11 @@ class MoviesController < ApplicationController
 
   private
     def not_found
-    render :json => {:response => "Resource not found"}, status: :not_found
-  end
+      render :json => {:response => "Resource not found"}, status: :not_found
+    end
+
+    def show
+      movie = Movie.find(params[:id])
+      render json: movie
+    end
 end
