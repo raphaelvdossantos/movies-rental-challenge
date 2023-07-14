@@ -1,4 +1,5 @@
 class MoviesController < ApplicationController
+  before_action :rented_by_user, only: [:rent]
   before_action :is_available, only: [:rent]
   
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
@@ -28,6 +29,14 @@ class MoviesController < ApplicationController
   end
 
   private
+    def rented_by_user
+      rented = Rental.where(user_id: params[:user_id], movie_id: params[:id])
+
+      if not rented.nil?
+        render :json => {:response => "Movie already rented by user" }, status: :forbidden 
+      end
+    end
+  
    def is_available
       @movie = Movie.find(params[:id])
       if @movie.available_copies == 0
